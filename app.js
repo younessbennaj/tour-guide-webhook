@@ -17,4 +17,6 @@ app.get("/", (req, res) => {
     .catch(error => console.log(error));
 });
 
-app.listen(port, () => console.log(`Server en écoute sur le port ${port}`));
+app.listen(process.env.PORT || port, () =>
+  console.log(`Listening on port ${port}`)
+);
