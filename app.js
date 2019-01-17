@@ -2,7 +2,7 @@ const express = require("express");
 const axios = require("axios");
 const app = express();
 const port = 8000;
-const API_URL = "https://9ddcd270.ngrok.io/api/activities";
+const API_URL = "https://dry-sierra-65221.herokuapp.com/api/activities";
 
 app.get("/", (req, res) => {
   axios
