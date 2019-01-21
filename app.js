@@ -9,7 +9,7 @@ app.use(express.json());
 const trad = {
   barque: "boat",
   eau: "boat",
-  cathédrale: "chrurch",
+  cathédrale: "church",
   cave: "champagne",
   champagne: "champagne",
   cinéma: "cinema",
@@ -24,7 +24,7 @@ const trad = {
   locaux: "local",
   local: "local",
   monument: "monument",
-  église: "chrurch",
+  église: "church",
   batiment: "monument",
   nature: "parc",
   naturel: "parc",
@@ -38,6 +38,24 @@ const trad = {
   louer: "rent",
   location: "rent",
   film: "cinema"
+};
+
+const emojis = {
+  boat: "🚣",
+  tour: "🚶",
+  gastronomy: "🥘",
+  champagne: "🥂",
+  parc: "🌳",
+  monument: "🏛️",
+  church: "⛪",
+  culture: "🎭",
+  historical: "🕰️",
+  museum: "📚",
+  recreation: "🤹",
+  rent: "💶",
+  sport: "🏃",
+  cinema: "🎬",
+  pool: "🏊"
 };
 
 // app.get("/", (req, res) => {
@@ -54,30 +72,41 @@ const trad = {
 // });
 
 app.post("/activities", (req, res) => {
-  console.log(req.body);
-  if (req.body.nlp.entities.activity) {
+  if (req.body.conversation.memory.activity) {
+    const { activity } = req.body.conversation.memory;
     //Search a specific activity
     axios
       .get(API_URL, {
         params: {
-          name: req.body.nlp.entities.activity[0].value
+          name: activity.value
         }
       })
       .then(response => {
-        // res.json(response.data);
+        const { name, description, url, tags } = response.data[0];
+        let emojiString = "";
+        for (let tag of tags) {
+          emojiString += emojis[tag];
+        }
         res.json({
           replies: [
             {
-              type: "card",
+              type: "text",
+              delay: 2,
+              content: `${name} ${emojiString}`
+            },
+            {
+              type: "picture",
+              content: "https://i.imgur.com/AqkJBm3.jpg"
+            },
+            {
+              type: "buttons",
               content: {
-                title: response.data[0].name,
-                subtitle: "Test",
-                imageUrl: "https://i.imgur.com/AqkJBm3.jpg",
+                title: description,
                 buttons: [
                   {
-                    title: "Merci",
-                    type: "BUTTON_TYPE",
-                    value: "Merci"
+                    title: "En savoir plus 👉",
+                    type: "web_url",
+                    value: url
                   }
                 ]
               }
@@ -93,7 +122,6 @@ app.post("/activities", (req, res) => {
     for (let topic of topics) {
       tags.push(trad[topic.value]);
     }
-    console.log(tags);
     axios
       .get(API_URL, {
         params: {
@@ -101,22 +129,27 @@ app.post("/activities", (req, res) => {
         }
       })
       .then(response => {
+        let content = [];
+        for (let activity of response.data) {
+          let obj = {
+            title: activity.name,
+            subtitle: "SUBTITLE",
+            imageUrl: "https://i.imgur.com/AqkJBm3.jpg",
+            buttons: [
+              {
+                title: "En savoir plus 👉",
+                type: "postback",
+                value: `Je veux visiter ${activity.name}`
+              }
+            ]
+          };
+          content.push(obj);
+        }
         res.json({
           replies: [
             {
-              type: "card",
-              content: {
-                title: response.data[0].name,
-                subtitle: "Test",
-                imageUrl: "https://i.imgur.com/AqkJBm3.jpg",
-                buttons: [
-                  {
-                    title: "Merci",
-                    type: "BUTTON_TYPE",
-                    value: "Merci"
-                  }
-                ]
-              }
+              type: "carousel",
+              content: content
             }
           ]
         });
